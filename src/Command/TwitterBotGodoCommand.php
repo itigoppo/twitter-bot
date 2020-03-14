@@ -105,8 +105,10 @@ class TwitterBotGodoCommand extends Command
         // リプライ保存
         $this->saveReplies();
 
-        // 2:30〜5：15は停止
-        if ($this->today->format('Hi') >= '0230' && $this->today->format('Hi') < '0515') {
+        $isMidnight = ($this->today->format('Hi') >= '0230' && $this->today->format('Hi') < '0515') ? true : false;
+
+        // 平日の2:30〜5：15は停止
+        if (!$this->today->isWeekend() && $isMidnight) {
             return;
         }
 
@@ -133,8 +135,8 @@ class TwitterBotGodoCommand extends Command
             }
         }
 
-        // 平日に限りTLに反応
-        if (empty($sayings) && !$this->today->isWeekend()) {
+        // TLに反応ただし土日の深夜は除く
+        if (empty($sayings) && (!$this->today->isWeekend() || ($this->today->isWeekend() && !$isMidnight))) {
             $sayings = $this->setTimelineMatchSayings();
         }
 
