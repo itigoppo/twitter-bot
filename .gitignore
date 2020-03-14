@@ -1,6 +1,5 @@
 # CakePHP 4
 /config/.env
-/config/app.php
 /config/app_local.php
 /logs/*
 /tmp/*
