@@ -455,6 +455,38 @@ class TwitterBotGodoCommand extends Command
     }
 
     /**
+     *  TL反応用の発言リストから1つセット
+     *
+     * @param null|string $regexp
+     * @return array|\Cake\Datasource\EntityInterface|\TwitterBot\Model\Entity\TwitterBotGodoSaying
+     */
+    private function setTimelineMatchSaying($regexp = null): EntityInterface
+    {
+        $query = $this->TwitterBotGodoSayings->find()->where(
+            [
+                $this->TwitterBotGodoSayings->aliasField('post_type') => PostType::MATCH,
+                $this->TwitterBotGodoSayings->aliasField('is_available') => true,
+            ]
+        );
+
+        if (empty($regexp)) {
+            $query->andWhere(
+                function (QueryExpression $exp, Query $q) {
+                    return $exp->isNull($this->TwitterBotGodoSayings->aliasField('regexp'));
+                }
+            );
+        } else {
+            $query->andWhere(
+                [
+                    $this->TwitterBotGodoSayings->aliasField('regexp') => $regexp,
+                ]
+            );
+        }
+
+        return $query->order('rand()')->first();
+    }
+
+    /**
      * TLに反応
      *
      * @return array
@@ -498,7 +530,7 @@ class TwitterBotGodoCommand extends Command
 
             foreach ($matchRegexps as $regexp) {
                 if (preg_match('/' . $regexp . '/', $timeline->text)) {
-                    $saying = $this->setReplySaying($regexp);
+                    $saying = $this->setTimelineMatchSaying($regexp);
                     $sayings[] = [
                         'reply' => $timeline->text,
                         'text' => $this->formatSaying(
